@@ -25,6 +25,9 @@ void PacketHandler::HandlePacket(VillageServerConnection* connection, BYTE* pack
 	case C2S_PLAYERCHAT:
 		HandlePacket_C2S_PLAYERCHAT(connection, dataPtr, dataSize);
 		break;
+	case C2S_LATENCY: // 모니터 레이턴시
+		HandlePacket_C2S_LATENCY(connection, dataPtr, dataSize);
+		break;
 	}
 }
 
@@ -208,6 +211,23 @@ void PacketHandler::HandlePacket_C2S_MAPSYNC(VillageServerConnection* connection
 	player->PlayerSync(vector3, state, dir, mouseDir, quaternion, target, moveType, angle);
 	MapManager::GetInstance()->MapSync(connection->GetPlayer());
 	player->SetPrevPos(vector3);
+}
+
+void PacketHandler::HandlePacket_C2S_LATENCY(VillageServerConnection* session, BYTE* packet, int32 packetSize)
+{
+	BinaryReader br(packet);
+	int32 lastTick;
+	br.Read(lastTick);
+
+	BYTE sendBuffer[20];
+	BinaryWriter bw(sendBuffer);
+	PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
+
+	bw.Write(lastTick);
+	pktHeader->_type = PacketProtocol::S2C_LATENCY;
+	pktHeader->_pktSize = bw.GetWriterSize();
+
+	session->Send(sendBuffer, bw.GetWriterSize());
 }
 
 void PacketHandler::HandlePacket_C2S_PLAYERCHAT(VillageServerConnection* connection, BYTE* packet, int32 packetSize)

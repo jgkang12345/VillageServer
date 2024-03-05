@@ -4,7 +4,7 @@
 #include "ConnectionContext.h"
 #include "MapManager.h"
 #include "Player.h"
-
+#include "ThreadSafeSharedPtr.h"
 void PacketHandler::HandlePacket(VillageServerConnection* connection, BYTE* packet, int32 packetSize)
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(packet);
@@ -94,10 +94,6 @@ void PacketHandler::HandlePacket_C2S_PLAYERINIT(VillageServerConnection* connect
 	ConnectionContext::GetInstance()->AddConnetion(playerInit->userSQ, connection);
 
 	{
-		BYTE sendBuffer[300];
-		BinaryWriter bw(sendBuffer);
-		PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
-
 		int32 sessionId = newPlayer->GetConnection()->GetConnectionId();
 		int8 playerState = (int8)newPlayer->GetState();
 		int8 playerDir = (int8)newPlayer->GetDir();
@@ -114,22 +110,23 @@ void PacketHandler::HandlePacket_C2S_PLAYERINIT(VillageServerConnection* connect
 		int8 playerType = (int8)newPlayer->GetPlayerType();
 		int32 exp = newPlayer->GetExp();
 
-		S2C_PLAYERINIT_PACKET sendPacket;
-		sendPacket.sessionId = sessionId;
-		sendPacket.playerState = playerState;
-		sendPacket.playerDir = playerDir;
-		sendPacket.playerMouseDir = playerMouseDir;
-		sendPacket.playerPos = playerPos;
-		sendPacket.playerQuaternion = playerQuaternion;
-		sendPacket.hp = hp;
-		sendPacket.mp = mp;
-		sendPacket.level = level;
-		sendPacket.speed = spped;
-		sendPacket.damage = damage;
-		wcscpy_s(sendPacket.playerName, userName);
-		sendPacket.playerType = playerType;
-		sendPacket.exp = exp;
-		connection->Send(reinterpret_cast<BYTE*>(&sendPacket), sendPacket._size);
+		S2C_PLAYERINIT_PACKET* sendPacket = new S2C_PLAYERINIT_PACKET();
+		sendPacket->sessionId = sessionId;
+		sendPacket->playerState = playerState;
+		sendPacket->playerDir = playerDir;
+		sendPacket->playerMouseDir = playerMouseDir;
+		sendPacket->playerPos = playerPos;
+		sendPacket->playerQuaternion = playerQuaternion;
+		sendPacket->hp = hp;
+		sendPacket->mp = mp;
+		sendPacket->level = level;
+		sendPacket->speed = spped;
+		sendPacket->damage = damage;
+		wcscpy_s(sendPacket->playerName, userName);
+		sendPacket->playerType = playerType;
+		sendPacket->exp = exp;
+		ThreadSafeSharedPtr safeSendPacket = ThreadSafeSharedPtr(sendPacket, false);
+		connection->Send(safeSendPacket);
 	}
 	connection->SetPlayer(newPlayer);
 	MapManager::GetInstance()->Set(newPlayer);
@@ -162,7 +159,9 @@ void PacketHandler::HandlePacket_C2S_PLAYERSYNC(VillageServerConnection* connect
 
 	player->PlayerSync(vector3, state, dir, mouseDir, quaternion, target, moveType, angle);
 
-	BYTE sendBuffer[100];
+	// BYTE sendBuffer[100];
+	byte* sendBuffer = new byte[500]; 
+
 	BinaryWriter bw(sendBuffer);
 	PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
 
@@ -179,7 +178,8 @@ void PacketHandler::HandlePacket_C2S_PLAYERSYNC(VillageServerConnection* connect
 	pktHeader->_type = PacketProtocol::S2C_PLAYERSYNC;
 	pktHeader->_pktSize = bw.GetWriterSize();
 
-	MapManager::GetInstance()->BroadCast(connection->GetPlayer(), sendBuffer, bw.GetWriterSize());
+	ThreadSafeSharedPtr safeSendBuffer = ThreadSafeSharedPtr(reinterpret_cast<PACKET_HEADER*>(sendBuffer), false);
+	MapManager::GetInstance()->BroadCast(connection->GetPlayer(), safeSendBuffer);
 }
 
 void PacketHandler::HandlePacket_C2S_MAPSYNC(VillageServerConnection* connection, BYTE* packet, int32 packetSize)
@@ -219,15 +219,15 @@ void PacketHandler::HandlePacket_C2S_LATENCY(VillageServerConnection* session, B
 	int32 lastTick;
 	br.Read(lastTick);
 
-	BYTE sendBuffer[20];
+	byte* sendBuffer = new byte[100];
 	BinaryWriter bw(sendBuffer);
 	PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
 
 	bw.Write(lastTick);
 	pktHeader->_type = PacketProtocol::S2C_LATENCY;
 	pktHeader->_pktSize = bw.GetWriterSize();
-
-	session->Send(sendBuffer, bw.GetWriterSize());
+	ThreadSafeSharedPtr safeSendBuffer = ThreadSafeSharedPtr(reinterpret_cast<PACKET_HEADER*>(sendBuffer), true);
+	session->Send(safeSendBuffer);
 }
 
 void PacketHandler::HandlePacket_C2S_PLAYERCHAT(VillageServerConnection* connection, BYTE* packet, int32 packetSize)
@@ -244,7 +244,7 @@ void PacketHandler::HandlePacket_C2S_PLAYERCHAT(VillageServerConnection* connect
 	br.ReadWString(text, chattingMsgSize);
 	;
 
-	BYTE sendBuffer[1000];
+	byte* sendBuffer = new byte[1000];
 	BinaryWriter bw(sendBuffer);
 	PacketHeader* pktHeader = bw.WriteReserve<PacketHeader>();
 
@@ -256,14 +256,16 @@ void PacketHandler::HandlePacket_C2S_PLAYERCHAT(VillageServerConnection* connect
 	pktHeader->_type = PacketProtocol::S2C_PLAYERCHAT;
 	pktHeader->_pktSize = bw.GetWriterSize();
 
+	ThreadSafeSharedPtr safeSendBuffer = ThreadSafeSharedPtr(reinterpret_cast<PACKET_HEADER*>(sendBuffer), true);
+
 	switch (chatType)
 	{
 	case 0:
-		MapManager::GetInstance()->BroadCast(connection->GetPlayer(), sendBuffer, bw.GetWriterSize());
+		MapManager::GetInstance()->BroadCast(connection->GetPlayer(), safeSendBuffer);
 		break;
 
 	case 1:
-		ConnectionContext::GetInstance()->BroadCast(sendBuffer, bw.GetWriterSize());
+		ConnectionContext::GetInstance()->BroadCast(safeSendBuffer);
 		break;
 	}
 }

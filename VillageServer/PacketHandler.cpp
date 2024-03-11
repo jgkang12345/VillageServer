@@ -28,6 +28,9 @@ void PacketHandler::HandlePacket(VillageServerConnection* connection, BYTE* pack
 	case C2S_LATENCY: // 모니터 레이턴시
 		HandlePacket_C2S_LATENCY(connection, dataPtr, dataSize);
 		break;
+	case S2C_HEARTBIT:
+		HandlePacket_S2C_HEARTBIT(connection, dataPtr, dataSize);
+		break;
 	}
 }
 
@@ -268,4 +271,9 @@ void PacketHandler::HandlePacket_C2S_PLAYERCHAT(VillageServerConnection* connect
 		ConnectionContext::GetInstance()->BroadCast(safeSendBuffer);
 		break;
 	}
+}
+
+void PacketHandler::HandlePacket_S2C_HEARTBIT(VillageServerConnection* session, BYTE* packet, int32 packetSize)
+{
+	session->SetHeartBeat();
 }

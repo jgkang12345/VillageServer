@@ -12,13 +12,22 @@ unsigned int _stdcall DispatchProc(void* Args)
 		app->GetIOCPCore()->Dispatch();
 }
 
+unsigned int _stdcall HeartBitPingProc(void* Args) 
+{
+	while (true)
+	{
+		ConnectionContext::GetInstance()->HeartBeatPing();
+		Sleep(5000);
+	}
+}
+
 int main() 
 {
 	PlayerDBConnectionPool::GetInstance()->Init(L"PLAYER", L"sa", L"root", 5);
 	AccountDBConnectionPool::GetInstance()->Init(L"MSSQL", L"sa", L"root", 5);
 	MapManager::GetInstance()->MapLoad("C:\\Users\\jgkang\\Desktop\\map\\VillageMap.dat");
 
-	const char* ip = "127.0.0.1";
+	const char* ip = "58.236.130.58";
 	uint16 port = 30004;
 	
 	SYSTEM_INFO sysInfo;
@@ -30,8 +39,9 @@ int main()
 	for (int i = 0; i < threadCount; i++)
 		ThreadManager::GetInstacne()->Launch(DispatchProc, &villageServerApp);
 
-	villageServerApp.Run(L"VillageServer");
+	ThreadManager::GetInstacne()->Launch(HeartBitPingProc, nullptr);
 
+	villageServerApp.Run(L"VillageServer");
 	ThreadManager::GetInstacne()->AllJoin();
 	return 0;
 }

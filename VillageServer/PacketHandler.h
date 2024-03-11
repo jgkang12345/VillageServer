@@ -11,6 +11,7 @@ private:
 	static void HandlePacket_C2S_MAPSYNC(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 	static void HandlePacket_C2S_LATENCY(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 	static void HandlePacket_C2S_PLAYERCHAT(VillageServerConnection* session, BYTE* packet, int32 packetSize);
+	static void HandlePacket_S2C_HEARTBIT(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 
 };
 

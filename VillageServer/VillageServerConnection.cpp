@@ -20,7 +20,7 @@ void VillageServerConnection::OnRecv(Connection* connection, byte* dataPtr, int3
 
 void VillageServerConnection::OnDisconnect()
 {
-	ConnectionContext::GetInstance()->RemoveConnection(_connectionId);
+	Connection::OnDisconnect();
 }
 
 void VillageServerConnection::OnConnect()

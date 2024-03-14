@@ -12,6 +12,9 @@ private:
 	static void HandlePacket_C2S_LATENCY(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 	static void HandlePacket_C2S_PLAYERCHAT(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 	static void HandlePacket_S2C_HEARTBIT(VillageServerConnection* session, BYTE* packet, int32 packetSize);
+	static void HandlePacket_C2S_PLAYERATTACK(VillageServerConnection* session, BYTE* packet, int32 packetSize);
+	static void HandlePacket_C2S_MONSTERATTACKED(VillageServerConnection* session, BYTE* packet, int32 packetSize);
+	static void HandlePacket_C2S_PLAYERESPAWN(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 
 };
 

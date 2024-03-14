@@ -5,6 +5,7 @@
 #include "MapManager.h"
 #include "Player.h"
 #include "ThreadSafeSharedPtr.h"
+#include "MonsterManager.h"
 void PacketHandler::HandlePacket(VillageServerConnection* connection, BYTE* packet, int32 packetSize)
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(packet);
@@ -30,6 +31,18 @@ void PacketHandler::HandlePacket(VillageServerConnection* connection, BYTE* pack
 		break;
 	case S2C_HEARTBIT:
 		HandlePacket_S2C_HEARTBIT(connection, dataPtr, dataSize);
+		break;
+
+	case PacketProtocol::C2S_PLAYERATTACK:
+		HandlePacket_C2S_PLAYERATTACK(connection, dataPtr, dataSize);
+		break;
+
+	case PacketProtocol::C2S_MONSTERATTACKED:
+		HandlePacket_C2S_MONSTERATTACKED(connection, dataPtr, dataSize);
+		break;
+
+	case PacketProtocol::C2S_PLAYERESPAWN:
+		HandlePacket_C2S_PLAYERESPAWN(connection, dataPtr, dataSize);
 		break;
 	}
 }
@@ -276,4 +289,55 @@ void PacketHandler::HandlePacket_C2S_PLAYERCHAT(VillageServerConnection* connect
 void PacketHandler::HandlePacket_S2C_HEARTBIT(VillageServerConnection* session, BYTE* packet, int32 packetSize)
 {
 	session->SetHeartBeat();
+}
+// TODO 투기장에서만 할것
+void PacketHandler::HandlePacket_C2S_PLAYERATTACK(VillageServerConnection* session, BYTE* packet, int32 packetSize)
+{
+	int32 otherPlayer;
+	int32 damage;
+
+	BinaryReader br(packet);
+	br.Read(otherPlayer);
+	br.Read(damage);
+
+	Player* AttackPlayer = session->GetPlayer();
+	Connection* AttackedSession = ConnectionContext::GetInstance()->GetConnection(otherPlayer);
+
+	if (AttackedSession == nullptr)
+		return;
+
+	Player* AttackedPlayer = AttackedSession->GetPlayer();
+
+	Vector3 attackedPos = AttackedPlayer->GetPos();
+	Vector3 attackerPos = AttackPlayer->GetPos();
+
+	if (attackedPos.x <= attackerPos.x + 2 && attackedPos.x >= attackedPos.x - 2)
+	{
+		if (attackedPos.z <= attackerPos.z + 2 && attackedPos.z >= attackedPos.z - 2)
+		{
+			AttackedPlayer->Attacked(session->GetPlayer(), damage);
+		}
+	}
+}
+
+void PacketHandler::HandlePacket_C2S_MONSTERATTACKED(VillageServerConnection* session, BYTE* packet, int32 packetSize)
+{
+	int32 monsterId;
+	int32 damage;
+	Vector3 monsterPos;
+
+	BinaryReader br(packet);
+	br.Read(monsterId);
+	br.Read(monsterPos);
+	br.Read(damage);
+
+	Player* attacker = session->GetPlayer();
+	Vector3 attackerPos = attacker->GetPos();
+
+	MonsterManager::GetInstnace()->AttackedMonster(monsterId, attacker, damage);
+}
+
+void PacketHandler::HandlePacket_C2S_PLAYERESPAWN(VillageServerConnection* session, BYTE* packet, int32 packetSize)
+{
+	session->GetPlayer()->ReSpawn();
 }

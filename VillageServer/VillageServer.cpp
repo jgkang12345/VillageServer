@@ -32,13 +32,14 @@ unsigned int _stdcall AcceptProc(void* Args)
 }
 void NoviceServerInit();
 void VillageServerInit();
+void InterMediateServerInit();
 int32 Init() 
 {
 	PlayerDBConnectionPool::GetInstance()->Init(L"PLAYER", L"sa", L"root", 5);
 	AccountDBConnectionPool::GetInstance()->Init(L"MSSQL", L"sa", L"root", 5);
 
 	int32 serverPort;
-	printf("30002=초보자존, 30004=마을, 30005=중급자존, 30006=고수존");
+	printf("30002=초보자존, 30004=마을, 30005=중급자존, 30006=고수존\n");
 	scanf_s("%d", &serverPort);
 	const char* ip = "58.236.130.58";
 
@@ -51,6 +52,10 @@ int32 Init()
 	case ServerPort::VILLAGE_SERVER:
 		VillageServerInit();
 		break;
+
+	case ServerPort::INTERMEDIATE_SERVER:
+		InterMediateServerInit();
+		break;
 	}
 
 	return serverPort;
@@ -62,7 +67,16 @@ void NoviceServerInit()
 	MonsterTable::GetInstnace()->Init(con);
 	PlayerDBConnectionPool::GetInstance()->Push(con);
 	MonsterManager::GetInstnace()->Init(1000);
-	MapManager::GetInstance()->MapLoadField("C:\\Users\\jgkang\\Desktop\\map\\map.dat");
+	MapManager::GetInstance()->MapLoadField("C:\\Users\\jgkang\\Desktop\\map\\NoviceFieldMap.dat");
+}
+
+void InterMediateServerInit()
+{
+	DBConnection* con = PlayerDBConnectionPool::GetInstance()->Pop();
+	MonsterTable::GetInstnace()->Init(con);
+	PlayerDBConnectionPool::GetInstance()->Push(con);
+	MonsterManager::GetInstnace()->Init(1000);
+	MapManager::GetInstance()->MapLoadField("C:\\Users\\jgkang\\Desktop\\map\\IntermediateFieldMap.dat");
 }
 
 void VillageServerInit() 

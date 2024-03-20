@@ -33,32 +33,50 @@ unsigned int _stdcall AcceptProc(void* Args)
 void NoviceServerInit();
 void VillageServerInit();
 void InterMediateServerInit();
+void HightServerInit();
 int32 Init() 
 {
 	PlayerDBConnectionPool::GetInstance()->Init(L"PLAYER", L"sa", L"root", 5);
 	AccountDBConnectionPool::GetInstance()->Init(L"MSSQL", L"sa", L"root", 5);
 
 	int32 serverPort;
-	printf("30002=초보자존, 30004=마을, 30005=중급자존, 30006=고수존\n");
-	scanf_s("%d", &serverPort);
+	printf("30004~30006 마을, 30007~30008 초보자, 30009 중급, 30010~30011 고수\n");
+	scanf_s("%d", &serverPort);	
 	const char* ip = "58.236.130.58";
 
 	switch (serverPort)
 	{
-	case ServerPort::NOVICE_SERVER:
+	case 30007:
+	case 30008:
 		NoviceServerInit();
 		break;
 
-	case ServerPort::VILLAGE_SERVER:
+	case 30004:
+	case 30005:
+	case 30006:
 		VillageServerInit();
 		break;
 
-	case ServerPort::INTERMEDIATE_SERVER:
+	case 30009:
 		InterMediateServerInit();
+		break;
+
+	case 30010:
+	case 30011:
+		HightServerInit();
 		break;
 	}
 
 	return serverPort;
+}
+
+void HightServerInit() 
+{
+	DBConnection* con = PlayerDBConnectionPool::GetInstance()->Pop();
+	MonsterTable::GetInstnace()->Init(con);
+	PlayerDBConnectionPool::GetInstance()->Push(con);
+	MonsterManager::GetInstnace()->Init(1000);
+	MapManager::GetInstance()->MapLoadField("C:\\Users\\jgkang\\Desktop\\map\\HighFieldMap.dat");
 }
 
 void NoviceServerInit() 

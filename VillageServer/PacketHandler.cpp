@@ -87,10 +87,38 @@ void PacketHandler::HandlePacket_C2S_PLAYERINIT(VillageServerConnection* connect
 		SQLCloseCursor(con->GetHSTMT());
 	}
 
-	if (pos.Zero())
+	if (playerInit->x != -1 && playerInit->y != -1 && playerInit->z != -1)
 	{
-		// 처음 접속인 경우 어디에 태어나게 할건가?
-		pos = { 45,0,50 };
+		pos = { playerInit->x,playerInit->y,playerInit->z };
+	}
+	else if (pos.Zero())
+	{
+		ServerType serverType = MapManager::GetInstance()->GetServerType();
+
+		switch (serverType)
+		{
+		case ServerType::HIGH:
+			pos = { 24,0,26};
+			break;
+
+		case ServerType::INTERMEDIATE:
+			if (playerInit->type == ServerType::HIGH)
+				pos = { 216, 0, 37 };
+			else
+				pos = { 33,0,209 };
+			break;
+
+		case ServerType::NOVICE:
+			if (playerInit->type == ServerType::INTERMEDIATE)
+				pos = { 246, 0, 124 };
+			else
+				pos = { 9,0,124 };
+			break;
+
+		case ServerType::VILLAGE:
+			pos = { 45,0,50 };
+			break;
+		}
 	}
 
 	Player* newPlayer = new Player(

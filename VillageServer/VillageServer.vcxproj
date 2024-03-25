@@ -73,18 +73,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>D:\Portfolio\ServerCore\JGNet98\JGNet98;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Portfolio\ServerCore\JGNet98\x64;$(LibraryPath)</LibraryPath>
+    <OutDir>..\..\Bin</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>D:\Portfolio\ServerCore\JGNet98\JGNet98;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Portfolio\ServerCore\JGNet98\x64;$(LibraryPath)</LibraryPath>
+    <OutDir>..\..\Bin</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>D:\Portfolio\ServerCore\JGNet98\JGNet98;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Portfolio\ServerCore\JGNet98\x64;$(LibraryPath)</LibraryPath>
+    <OutDir>..\..\Bin</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>D:\Portfolio\ServerCore\JGNet98\JGNet98;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Portfolio\ServerCore\JGNet98\x64;$(LibraryPath)</LibraryPath>
+    <OutDir>..\..\Bin</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

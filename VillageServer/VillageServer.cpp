@@ -34,16 +34,16 @@ void NoviceServerInit();
 void VillageServerInit();
 void InterMediateServerInit();
 void HightServerInit();
-int32 Init() 
+int32 Init(int32 serverPort)
 {
 	PlayerDBConnectionPool::GetInstance()->Init(L"PLAYER", L"sa", L"root", 5);
 	AccountDBConnectionPool::GetInstance()->Init(L"MSSQL", L"sa", L"root", 5);
 
-	int32 serverPort;
-	printf("30004~30006 마을, 30007~30008 초보자, 30009 중급, 30010~30011 고수\n");
-	scanf_s("%d", &serverPort);	
+	// int32 serverPort;
+	// printf("30004~30006 마을, 30007~30008 초보자, 30009 중급, 30010~30011 고수\n");
+	// scanf_s("%d", &serverPort);	
 	const char* ip = "58.236.130.58";
-
+	printf("ServerPort: %d\n", serverPort);
 	switch (serverPort)
 	{
 	case 30007:
@@ -76,7 +76,7 @@ void HightServerInit()
 	MonsterTable::GetInstnace()->Init(con);
 	PlayerDBConnectionPool::GetInstance()->Push(con);
 	MonsterManager::GetInstnace()->Init(1000);
-	MapManager::GetInstance()->MapLoadField("C:\\Users\\jgkang\\Desktop\\map\\HighFieldMap.dat");
+	MapManager::GetInstance()->MapLoadField(ServerType::HIGH,"map\\HighFieldMap.dat");
 }
 
 void NoviceServerInit() 
@@ -85,7 +85,7 @@ void NoviceServerInit()
 	MonsterTable::GetInstnace()->Init(con);
 	PlayerDBConnectionPool::GetInstance()->Push(con);
 	MonsterManager::GetInstnace()->Init(1000);
-	MapManager::GetInstance()->MapLoadField("C:\\Users\\jgkang\\Desktop\\map\\NoviceFieldMap.dat");
+	MapManager::GetInstance()->MapLoadField(ServerType::NOVICE, "map\\NoviceFieldMap.dat");
 }
 
 void InterMediateServerInit()
@@ -94,12 +94,12 @@ void InterMediateServerInit()
 	MonsterTable::GetInstnace()->Init(con);
 	PlayerDBConnectionPool::GetInstance()->Push(con);
 	MonsterManager::GetInstnace()->Init(1000);
-	MapManager::GetInstance()->MapLoadField("C:\\Users\\jgkang\\Desktop\\map\\IntermediateFieldMap.dat");
+	MapManager::GetInstance()->MapLoadField(ServerType::INTERMEDIATE, "map\\IntermediateFieldMap.dat");
 }
 
 void VillageServerInit() 
 {
-	MapManager::GetInstance()->MapLoad("C:\\Users\\jgkang\\Desktop\\map\\VillageMap.dat");
+	MapManager::GetInstance()->MapLoad(ServerType::VILLAGE, "map\\VillageMap.dat");
 }
 
 void Update(int32 currentTick) 
@@ -108,10 +108,11 @@ void Update(int32 currentTick)
 	MonsterManager::GetInstnace()->Update(currentTick);
 }
 
-int main() 
+int main(int argc, char* argv[])
 {
 	const char* ip = "58.236.130.58";
-	uint16 port = Init();
+	int data = std::atoi(argv[1]);
+	uint16 port = Init(data);
 	
 	SYSTEM_INFO sysInfo;
 	GetSystemInfo(&sysInfo);

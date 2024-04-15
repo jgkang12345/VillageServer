@@ -8,9 +8,11 @@ private:
 
 public:
 	static Connection* MakeGameSession(const SOCKET& socket, const SOCKADDR_IN& sockAddr) { return new VillageServerConnection(socket, sockAddr); }
+	static Connection* MakeGameSession2() { return new VillageServerConnection(); }
 
 public:
 	VillageServerConnection(const SOCKET& socket, const SOCKADDR_IN& sockAddrIn);
+	VillageServerConnection();
 	virtual ~VillageServerConnection();
 
 public:

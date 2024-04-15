@@ -44,6 +44,10 @@ void PacketHandler::HandlePacket(VillageServerConnection* connection, BYTE* pack
 	case PacketProtocol::C2S_PLAYERESPAWN:
 		HandlePacket_C2S_PLAYERESPAWN(connection, dataPtr, dataSize);
 		break;
+
+	case C2S_PLAYERSKILLSYNC:
+		HandlePacket_C2S_PLAYERSKILLSYNC(connection, dataPtr, dataSize);
+		break;
 	}
 }
 
@@ -368,4 +372,21 @@ void PacketHandler::HandlePacket_C2S_MONSTERATTACKED(VillageServerConnection* se
 void PacketHandler::HandlePacket_C2S_PLAYERESPAWN(VillageServerConnection* session, BYTE* packet, int32 packetSize)
 {
 	session->GetPlayer()->ReSpawn();
+}
+
+void PacketHandler::HandlePacket_C2S_PLAYERSKILLSYNC(VillageServerConnection* session, BYTE* packet, int32 packetSize)
+{
+	int32 playerId;
+	BinaryReader br(packet);
+	br.Read(playerId);
+
+	byte* sendBuffer = new byte[30];
+
+	BinaryWriter bw(sendBuffer);
+	PacketHeader* pk = bw.WriteReserve<PacketHeader>();
+	bw.Write(playerId);
+	pk->_pktSize = bw.GetWriterSize();
+	pk->_type = C2S_PLAYERSKILLSYNC;
+	ThreadSafeSharedPtr safeSendBuffer = ThreadSafeSharedPtr(reinterpret_cast<PACKET_HEADER*>(sendBuffer), true);
+	MapManager::GetInstance()->BroadCast(session->GetPlayer(), safeSendBuffer);
 }

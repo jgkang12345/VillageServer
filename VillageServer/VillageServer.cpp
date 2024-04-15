@@ -104,7 +104,7 @@ void VillageServerInit()
 	MapManager::GetInstance()->MapLoad(ServerType::VILLAGE, "map\\VillageMap.dat");
 }
 
-void Update(int32 currentTick) 
+void Update(uint64 currentTick)
 {
 	ServerType type = MapManager::GetInstance()->GetServerType();
 	
@@ -148,34 +148,33 @@ bool MonitorInit(int32 port)
 int main(int argc, char* argv[])
 {
 	const char* ip = "58.236.130.58";
-	int data = std::atoi(argv[1]);
+	int32 data = std::atoi(argv[1]);
 	uint16 port = Init(data);
 	
 	SYSTEM_INFO sysInfo;
 	GetSystemInfo(&sysInfo);
 	int32 threadCount = sysInfo.dwNumberOfProcessors * 2;
 
-	JGNet98App villageServerApp(ip, port, VillageServerConnection::MakeGameSession);
-
+	JGNet98App villageServerApp(ip, port, VillageServerConnection::MakeGameSession2);
+	villageServerApp.Run(L"TEST");
 	bool monitorCon = MonitorInit(port);
-
+	
 	if (!monitorCon)
 	{
 		printf("모니터 연결 실패\n");
 		return false;
 	}
 
-
 	for (int i = 0; i < threadCount; i++)
 		ThreadManager::GetInstacne()->Launch(DispatchProc, &villageServerApp);
 
 	ThreadManager::GetInstacne()->Launch(HeartBitPingProc, nullptr);
-	ThreadManager::GetInstacne()->Launch(AcceptProc, &villageServerApp);
+	// ThreadManager::GetInstacne()->Launch(AcceptProc, &villageServerApp);
 
 	int32 sumTick = 0;
 	while (true)
 	{
-		int32 currentTick = ::GetTickCount64();
+		uint64 currentTick = ::GetTickCount64();
 		Update(currentTick);
 		Sleep(200);
 		sumTick += 200;

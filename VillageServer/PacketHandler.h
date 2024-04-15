@@ -15,6 +15,7 @@ private:
 	static void HandlePacket_C2S_PLAYERATTACK(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 	static void HandlePacket_C2S_MONSTERATTACKED(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 	static void HandlePacket_C2S_PLAYERESPAWN(VillageServerConnection* session, BYTE* packet, int32 packetSize);
+	static void HandlePacket_C2S_PLAYERSKILLSYNC(VillageServerConnection* session, BYTE* packet, int32 packetSize);
 
 };
 

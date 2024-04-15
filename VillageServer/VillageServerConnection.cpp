@@ -8,6 +8,10 @@ VillageServerConnection::VillageServerConnection(const SOCKET& socket, const SOC
 {
 }
 
+VillageServerConnection::VillageServerConnection() : Connection()
+{
+}
+
 VillageServerConnection::~VillageServerConnection()
 {
 

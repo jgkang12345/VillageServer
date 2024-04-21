@@ -147,6 +147,9 @@ bool MonitorInit(int32 port)
 
 int main(int argc, char* argv[])
 {
+	/*
+		ini 파일 활용하기
+	*/
 	const char* ip = "58.236.130.58";
 	int32 data = std::atoi(argv[1]);
 	uint16 port = Init(data);
